@@ -51,12 +51,11 @@ def _layout(title, height=None):
     return layout
 
 
-# Ordered so the two green-ish tones (green, aqua) land far apart — with 4-5
-# non-LTA/non-current years shown at once, adjacent slots must stay visually
-# distinct (a plain "last N columns" cycle put green next to aqua and they
-# read as the same color).
-YEAR_PALETTE = [SERIES["blue"], SERIES["magenta"], SERIES["orange"], SERIES["violet"],
-                SERIES["yellow"], SERIES["red"], SERIES["green"], SERIES["aqua"]]
+# ColorBrewer "Set1" — a categorical palette specifically validated for
+# maximum perceptual distinctness between adjacent slots (unlike the SERIES
+# dict above, where blue/violet and green/aqua read as near-identical hues
+# at thin line widths). Yellow omitted: too low-contrast on a white background.
+YEAR_PALETTE = ["#e41a1c", "#377eb8", "#4daf4a", "#ff7f00", "#984ea3", "#f781bf", "#a65628"]
 
 
 def _recent_year_cols(year_cols, n=6):
