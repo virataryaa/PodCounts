@@ -44,7 +44,7 @@ def _layout(title, height=None):
                     bgcolor="rgba(0,0,0,0)"),
         xaxis=dict(gridcolor=GRID, linecolor=GRID, tickfont=dict(color=MUTED)),
         yaxis=dict(gridcolor=GRID, linecolor=GRID, tickfont=dict(color=MUTED),
-                   tickformat=",.0f"),
+                   tickformat=",.1f"),
     )
     if height:
         layout["height"] = height
@@ -92,14 +92,17 @@ def monthly_comparison(df_wide, year_cols, title="Monthly Comparison", height=No
     palette_cycle = list(SERIES.values())
     fig = go.Figure()
     for i, yr in enumerate(shown_years):
-        is_last = i == len(shown_years) - 1
+        is_lta = yr == "LTA"
+        is_last = (not is_lta) and i == len(shown_years) - 1
         fig.add_trace(go.Scatter(
             x=periods, y=df_wide[yr],
-            mode="lines+markers" if is_last else "lines",
+            mode="lines+markers" if (is_last or is_lta) else "lines",
             name=yr, connectgaps=True,
-            line=dict(width=4 if is_last else 2,
-                       color=INK if is_last else palette_cycle[i % len(palette_cycle)]),
-            marker=dict(size=7, color=INK) if is_last else dict(size=0),
+            line=dict(width=2 if is_lta else (4 if is_last else 2),
+                       color=MUTED if is_lta else (INK if is_last else palette_cycle[i % len(palette_cycle)]),
+                       dash="dot" if is_lta else "solid"),
+            marker=(dict(size=6, symbol="diamond-open", color=MUTED) if is_lta
+                    else dict(size=7, color=INK) if is_last else dict(size=0)),
         ))
     if proj_vals:
         current_year = year_cols[-1]
@@ -121,13 +124,15 @@ def cumulative_forecast(df_wide, year_cols, title="Cumulative (to date)", height
     palette_cycle = list(SERIES.values())
     fig = go.Figure()
     for i, yr in enumerate(shown_years):
-        is_last = i == len(shown_years) - 1
+        is_lta = yr == "LTA"
+        is_last = (not is_lta) and i == len(shown_years) - 1
         fig.add_trace(go.Scatter(
             x=periods, y=cum[yr],
             mode="lines",
             name=yr, connectgaps=True,
-            line=dict(width=4 if is_last else 2,
-                       color=INK if is_last else palette_cycle[i % len(palette_cycle)]),
+            line=dict(width=2 if is_lta else (4 if is_last else 2),
+                       color=MUTED if is_lta else (INK if is_last else palette_cycle[i % len(palette_cycle)]),
+                       dash="dot" if is_lta else "solid"),
         ))
     if proj_vals:
         current_year = year_cols[-1]

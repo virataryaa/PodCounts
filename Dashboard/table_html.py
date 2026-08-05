@@ -57,9 +57,7 @@ _STYLE = f"""
 def _fmt(v, unit):
     if unit == "%":
         return f"{v:.1f}%"
-    if unit == "kg/ton":
-        return f"{v:.1f}"
-    return f"{v:,.0f}"
+    return f"{v:,.1f}"
 
 
 def summary_table_html(table, period_label, unit=""):
