@@ -42,13 +42,15 @@ def load_raw():
 
 
 def classes(df, include_total=True, include_settings=True):
-    """All selectable CLASS options, in the survey's natural growth-stage order."""
-    order = ["1. Tiny", "2.1 Small-1", "2.2 Small-2", "2. Small", "3. Large",
-             "4. Mature", "5. Ripe", "6. Insect", "7. Forced", "8. Damaged", "9. Black"]
+    """All selectable CLASS options — Settings and TOTAL first (most used),
+    then the atomic growth-stage classes in their natural survey order."""
+    order = []
     if include_settings:
         order = order + [SETTINGS_LABEL]
     if include_total:
         order = order + [TOTAL]
+    order = order + ["1. Tiny", "2.1 Small-1", "2.2 Small-2", "2. Small", "3. Large",
+                      "4. Mature", "5. Ripe", "6. Insect", "7. Forced", "8. Damaged", "9. Black"]
     return order
 
 
