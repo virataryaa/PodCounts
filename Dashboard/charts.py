@@ -51,7 +51,25 @@ def _layout(title, height=None):
     return layout
 
 
+# Ordered so the two green-ish tones (green, aqua) land far apart — with 4-5
+# non-LTA/non-current years shown at once, adjacent slots must stay visually
+# distinct (a plain "last N columns" cycle put green next to aqua and they
+# read as the same color).
+YEAR_PALETTE = [SERIES["blue"], SERIES["magenta"], SERIES["orange"], SERIES["violet"],
+                SERIES["yellow"], SERIES["red"], SERIES["green"], SERIES["aqua"]]
+
+
 def _recent_year_cols(year_cols, n=6):
+    return year_cols[-n:]
+
+
+def _shown_years_with_lta(year_cols, n):
+    """Like _recent_year_cols, but keeps LTA pinned in view even once there
+    are more real crop years than fit in the window (a plain last-N slice
+    would eventually push LTA — the oldest column — out of frame)."""
+    if "LTA" in year_cols:
+        others = [y for y in year_cols if y != "LTA"]
+        return ["LTA"] + others[-(n - 1):]
     return year_cols[-n:]
 
 
@@ -88,18 +106,23 @@ def _projection_trace_xy(periods, actual_series, proj_vals, cumulative_base=None
 
 def monthly_comparison(df_wide, year_cols, title="Monthly Comparison", height=None, proj_vals=None):
     periods = df_wide["Period"].tolist()
-    shown_years = _recent_year_cols(year_cols, 6)
-    palette_cycle = list(SERIES.values())
+    shown_years = _shown_years_with_lta(year_cols, 6)
+    color_idx = 0
     fig = go.Figure()
     for i, yr in enumerate(shown_years):
         is_lta = yr == "LTA"
         is_last = (not is_lta) and i == len(shown_years) - 1
+        if not is_lta and not is_last:
+            color = YEAR_PALETTE[color_idx % len(YEAR_PALETTE)]
+            color_idx += 1
+        else:
+            color = None
         fig.add_trace(go.Scatter(
             x=periods, y=df_wide[yr],
             mode="lines+markers" if (is_last or is_lta) else "lines",
             name=yr, connectgaps=True,
             line=dict(width=2 if is_lta else (4 if is_last else 2),
-                       color=MUTED if is_lta else (INK if is_last else palette_cycle[i % len(palette_cycle)]),
+                       color=MUTED if is_lta else (INK if is_last else color),
                        dash="dot" if is_lta else "solid"),
             marker=(dict(size=6, symbol="diamond-open", color=MUTED) if is_lta
                     else dict(size=7, color=INK) if is_last else dict(size=0)),
@@ -120,18 +143,23 @@ def monthly_comparison(df_wide, year_cols, title="Monthly Comparison", height=No
 def cumulative_forecast(df_wide, year_cols, title="Cumulative (to date)", height=None, proj_vals=None):
     periods = df_wide["Period"].tolist()
     cum = _cumulative(df_wide, year_cols)
-    shown_years = _recent_year_cols(year_cols, 7)
-    palette_cycle = list(SERIES.values())
+    shown_years = _shown_years_with_lta(year_cols, 7)
+    color_idx = 0
     fig = go.Figure()
     for i, yr in enumerate(shown_years):
         is_lta = yr == "LTA"
         is_last = (not is_lta) and i == len(shown_years) - 1
+        if not is_lta and not is_last:
+            color = YEAR_PALETTE[color_idx % len(YEAR_PALETTE)]
+            color_idx += 1
+        else:
+            color = None
         fig.add_trace(go.Scatter(
             x=periods, y=cum[yr],
             mode="lines",
             name=yr, connectgaps=True,
             line=dict(width=2 if is_lta else (4 if is_last else 2),
-                       color=MUTED if is_lta else (INK if is_last else palette_cycle[i % len(palette_cycle)]),
+                       color=MUTED if is_lta else (INK if is_last else color),
                        dash="dot" if is_lta else "solid"),
         ))
     if proj_vals:

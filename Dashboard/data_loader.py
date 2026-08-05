@@ -16,7 +16,7 @@ LTA_YEAR = 1950
 LTA_LABEL = "LTA"
 
 TOTAL = "TOTAL"                       # Class value meaning "all classes combined"
-SETTINGS_LABEL = "Tiny + Small-1"     # derived class: 1. Tiny + 2.1 Small-1
+SETTINGS_LABEL = "Settings"           # derived class: 1. Tiny + 2.1 Small-1
 ATOMIC_CLASSES = ["1. Tiny", "2.1 Small-1", "2.2 Small-2", "3. Large",
                   "4. Mature", "5. Ripe", "6. Insect", "7. Forced", "8. Damaged", "9. Black"]
 
