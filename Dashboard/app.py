@@ -86,26 +86,28 @@ st.write("")
 def render_single(country, class_):
     df_wide = flow_wide(df, country, class_)
     year_cols = year_columns(df_wide)
-    unit = "count"
     main_wide = window_wide(df_wide, MAIN_CROP_PERIODS)
     mid_wide = window_wide(df_wide, MID_CROP_PERIODS)
 
     st.markdown(f"#### {class_} Pod Counts &middot; {country}", unsafe_allow_html=True)
 
-    top_cols = st.columns([1, 1, 1])
-    with top_cols[0]:
+    row1 = st.columns([1, 1])
+    with row1[0]:
         st.plotly_chart(monthly_comparison(df_wide, year_cols, title="Monthly Counts", height=PANEL_H),
                          use_container_width=True)
-    with top_cols[1]:
+    with row1[1]:
         st.plotly_chart(
             cumulative_forecast(df_wide, year_cols, title="Cumulative Counts", height=PANEL_H),
             use_container_width=True,
         )
-    with top_cols[2]:
+
+    row2 = st.columns([1, 1])
+    with row2[0]:
         st.plotly_chart(
             cumulative_forecast(main_wide, year_cols, title="Main Crop — Cumulative", height=PANEL_H),
             use_container_width=True,
         )
+    with row2[1]:
         st.plotly_chart(
             cumulative_forecast(mid_wide, year_cols, title="Mid Crop — Cumulative", height=PANEL_H),
             use_container_width=True,
@@ -114,19 +116,19 @@ def render_single(country, class_):
     bottom_cols = st.columns([2, 1, 1])
     with bottom_cols[0]:
         st.markdown(
-            seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}", unit=unit, kind="flow"),
+            seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}", unit="", kind="flow"),
             unsafe_allow_html=True,
         )
     with bottom_cols[1]:
         st.markdown(
             seasonal_table_html(main_wide, year_cols, title=f"{class_} — Main Crop ({country})",
-                                 unit=unit, kind="flow", summary_label="Total"),
+                                 unit="", kind="flow", summary_label="Total"),
             unsafe_allow_html=True,
         )
     with bottom_cols[2]:
         st.markdown(
             seasonal_table_html(mid_wide, year_cols, title=f"{class_} — Mid Crop ({country})",
-                                 unit=unit, kind="flow", summary_label="Total"),
+                                 unit="", kind="flow", summary_label="Total"),
             unsafe_allow_html=True,
         )
 
@@ -164,7 +166,7 @@ def render_compare(country, classes_selected):
         if prev_total not in (None, 0) and pd.notna(prev_total):
             yoy = (latest_total - prev_total) / prev_total * 100
         rows.append({"name": c, "period": crop_year, "prev": prev_total, "latest": latest_total,
-                     "yoy": yoy, "vs_avg": None, "unit": "count"})
+                     "yoy": yoy, "vs_avg": None, "unit": ""})
     st.markdown(
         overview_table_html(rows, f"{country} — Total by Class", prev_year or "—", crop_year),
         unsafe_allow_html=True,
