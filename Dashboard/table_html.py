@@ -47,8 +47,8 @@ _STYLE = f"""
                     text-align: right; position: sticky; top: 0; white-space: nowrap; }}
 .unica-table th.period-col, .unica-table td.period-col {{ text-align: left; font-style: italic;
                     color: {MUTED}; white-space: nowrap; }}
-.unica-table td {{ padding: 2px 8px; line-height: 14px; text-align: right; white-space: nowrap; }}
-.unica-table td.bar-cell {{ min-width: 70px; padding: 2px 6px; }}
+.unica-table td {{ padding: 1px 8px; line-height: 13px; text-align: right; white-space: nowrap; }}
+.unica-table td.bar-cell {{ min-width: 65px; padding: 1px 6px; }}
 .unica-table tr.total-row td {{ font-weight: 700; border-top: 2px solid {INK}; }}
 </style>
 """
@@ -163,7 +163,17 @@ def seasonal_table_html(df_wide, year_cols, title, unit="", kind="flow",
 
     if summary_series is None:
         summary_series = mat.sum(axis=1, skipna=True) if kind == "flow" else mat.mean(axis=1, skipna=True)
-    summary_yoy = summary_series.pct_change(fill_method=None) * 100
+
+    # A plain pct_change() compares each row to whatever sits directly above it in the
+    # index — for the first real crop year that's LTA, producing a nonsensical "YoY vs
+    # the long-term average". Compare real years only to the previous real year, and
+    # leave it blank (not +inf%) when the prior year's total is zero or missing.
+    real_years = [y for y in summary_series.index if y != "LTA"]
+    summary_yoy = pd.Series(index=summary_series.index, dtype=float)
+    for i in range(1, len(real_years)):
+        prev_val, cur_val = summary_series.get(real_years[i - 1]), summary_series.get(real_years[i])
+        if pd.notna(prev_val) and prev_val != 0 and pd.notna(cur_val):
+            summary_yoy[real_years[i]] = (cur_val - prev_val) / prev_val * 100
 
     vmin = mat.min(numeric_only=True).min()
     vmax = mat.max(numeric_only=True).max()
@@ -185,11 +195,12 @@ def seasonal_table_html(df_wide, year_cols, title, unit="", kind="flow",
             cells.append(f'<td style="background:{bg};color:{txt};">{_fmt(v, unit)}</td>')
         s = summary_series.get(yr)
         s_cell = f'<td style="font-weight:600;">{_fmt(s, unit)}</td>' if pd.notna(s) else '<td></td>'
-        yoy_cell = f'<td class="bar-cell">{_bar_cell(summary_yoy.get(yr))}</td>'
+        yoy_cell = f'<td class="bar-cell">{_bar_cell(summary_yoy.get(yr), height=13, font_size=9)}</td>'
         rows_html.append("<tr>" + "".join(cells) + s_cell + yoy_cell + "</tr>")
 
     if len(mat) >= 2:
-        yoy_row = (mat.iloc[-1] - mat.iloc[-2]) / mat.iloc[-2] * 100
+        prev_row, cur_row = mat.iloc[-2], mat.iloc[-1]
+        yoy_row = ((cur_row - prev_row) / prev_row * 100).replace([float("inf"), float("-inf")], float("nan"))
     else:
         yoy_row = pd.Series(index=periods, dtype=float)
     lta_avg_row = mat.mean(axis=0, skipna=True)
