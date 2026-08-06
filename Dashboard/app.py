@@ -117,21 +117,17 @@ with row2[1]:
         use_container_width=True,
     )
 
-bottom_cols = st.columns([2, 1, 1])
-with bottom_cols[0]:
-    st.markdown(
-        seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}", unit="", kind="flow"),
-        unsafe_allow_html=True,
-    )
-with bottom_cols[1]:
-    st.markdown(
-        seasonal_table_html(main_wide, year_cols, title=f"{class_} — Main Crop ({country})",
-                             unit="", kind="flow", summary_label="Total"),
-        unsafe_allow_html=True,
-    )
-with bottom_cols[2]:
-    st.markdown(
-        seasonal_table_html(mid_wide, year_cols, title=f"{class_} — Mid Crop ({country})",
-                             unit="", kind="flow", summary_label="Total"),
-        unsafe_allow_html=True,
-    )
+st.markdown(
+    seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}", unit="", kind="flow"),
+    unsafe_allow_html=True,
+)
+st.markdown(
+    seasonal_table_html(main_wide, year_cols, title=f"{class_} — Main Crop ({country})",
+                         unit="", kind="flow", summary_label="Total"),
+    unsafe_allow_html=True,
+)
+st.markdown(
+    seasonal_table_html(mid_wide, year_cols, title=f"{class_} — Mid Crop ({country})",
+                         unit="", kind="flow", summary_label="Total"),
+    unsafe_allow_html=True,
+)
