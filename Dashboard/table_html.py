@@ -190,10 +190,13 @@ def seasonal_table_html(df_wide, year_cols, title, unit="", kind="flow",
                 break
             n_ytd += 1
         ytd_periods = periods[:n_ytd] or periods[:1]
-        ytd_series = (mat[ytd_periods].sum(axis=1, skipna=True) if kind == "flow"
+        # min_count=1 so a crop year with no data at all in this span stays NaN
+        # (not 0) — otherwise it renders as a spurious 0 / -100% YoY.
+        ytd_series = (mat[ytd_periods].sum(axis=1, skipna=True, min_count=1) if kind == "flow"
                       else mat[ytd_periods].mean(axis=1, skipna=True))
     if full_series is None:
-        full_series = mat.sum(axis=1, skipna=True) if kind == "flow" else mat.mean(axis=1, skipna=True)
+        full_series = (mat.sum(axis=1, skipna=True, min_count=1) if kind == "flow"
+                       else mat.mean(axis=1, skipna=True))
     # The still-in-progress crop year isn't a real full-season total yet — blank it
     # rather than show a misleadingly low number and a misleadingly bad YoY.
     incomplete = mat.isna().any(axis=1)
