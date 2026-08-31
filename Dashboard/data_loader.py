@@ -101,6 +101,21 @@ def flow_wide(df, country, class_):
     return _pivot(df, country, class_)
 
 
+def ytd_period_window(df_wide, year_cols):
+    """Periods (Apr, Apr-May, ...) actually reported so far for the latest crop
+    year — so every crop year's 'YTD' figure covers the same apples-to-apples
+    span instead of summing a full season for old years against a few months
+    for the current one. Returns (periods, label)."""
+    periods = df_wide["Period"].tolist()
+    real = [y for y in year_cols if y != LTA_LABEL]
+    current_year = real[-1]
+    last_valid = df_wide[current_year].last_valid_index()
+    n = 0 if last_valid is None else last_valid + 1
+    included = periods[:n] or periods[:1]
+    span = included[0] if len(included) == 1 else f"{included[0]}-{included[-1]}"
+    return included, f"YTD ({span})"
+
+
 def get_crop_years(df, include_lta=False):
     years = _crop_year_order(df)
     return years if include_lta else [y for y in years if y != LTA_LABEL]

@@ -4,7 +4,7 @@ from datetime import datetime
 import streamlit as st
 
 from data_loader import (load_raw, classes, year_columns, flow_wide,
-                          window_wide, DATA_PATH, TOTAL, ALL_COUNTRIES, COUNTRIES,
+                          window_wide, ytd_period_window, DATA_PATH, TOTAL, ALL_COUNTRIES, COUNTRIES,
                           MAIN_CROP_PERIODS, MID_CROP_PERIODS)
 from charts import monthly_comparison, cumulative_forecast
 from table_html import seasonal_table_html
@@ -117,17 +117,21 @@ with row2[1]:
         use_container_width=True,
     )
 
+_, ytd_label = ytd_period_window(df_wide, year_cols)
 st.markdown(
-    seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}", unit="", kind="flow"),
+    seasonal_table_html(df_wide, year_cols, title=f"{class_} Pod Counts — {country}",
+                         unit="", kind="flow", ytd_label=ytd_label),
     unsafe_allow_html=True,
 )
+_, main_ytd_label = ytd_period_window(main_wide, year_cols)
 st.markdown(
     seasonal_table_html(main_wide, year_cols, title=f"{class_} — Main Crop ({country})",
-                         unit="", kind="flow", summary_label="Total"),
+                         unit="", kind="flow", ytd_label=main_ytd_label, full_label="Main Crop Total"),
     unsafe_allow_html=True,
 )
+_, mid_ytd_label = ytd_period_window(mid_wide, year_cols)
 st.markdown(
     seasonal_table_html(mid_wide, year_cols, title=f"{class_} — Mid Crop ({country})",
-                         unit="", kind="flow", summary_label="Total"),
+                         unit="", kind="flow", ytd_label=mid_ytd_label, full_label="Mid Crop Total"),
     unsafe_allow_html=True,
 )
